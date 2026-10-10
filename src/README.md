@@ -44,7 +44,7 @@ python3 src/build.py      # depuis la racine ; écrit index.html
 | `__MX__` | matrice OSRM (`{O, A, d:[lignes durées], k:[lignes distances]}`) |
 | `__PH__` | `{}` — les photos ne sont pas inlinées ; `window.__noPhotos=true` fait charger `photos.json` en différé |
 
-**À chaque déploiement qui change index.html ou photos.json : incrémenter la version du cache dans `sw.js`** (`const C="onsortou-v7"` → `v8`…), sinon les utilisateurs installés gardent l'ancienne version.
+**Version automatique** : si `index.html` change, `build.py` incrémente lui-même le cache de `sw.js` (`onsortou-vN`) et affiche « Version N · date · heure » (heure de Zurich) en bas de l'app (`<p class="ver">`). Rebuild sans changement = même version. Ne plus incrémenter `sw.js` à la main.
 
 Le garde du service worker dans index.html doit rester : `!/claude\.ai|claudeusercontent/.test(location.host)` (pas de SW dans l'aperçu artefact Claude).
 
@@ -128,7 +128,7 @@ Tableau d'objets :
 | `photo`, `credit`, `credit_url` | `photos/<id>.jpg` (clé dans photos.json), auteur · licence, page Commons |
 | `start`, `end` | événements uniquement (ISO) |
 
-**Ajouter une activité** : l'ajouter dans `data.json` (3 langues) → recalculer la matrice (§6) sinon elle utilise l'estimation de secours → éventuellement photo (§7) → `build.py` → bump `sw.js`.
+**Ajouter une activité** : l'ajouter dans `data.json` (3 langues) → recalculer la matrice (§6) sinon elle utilise l'estimation de secours → éventuellement photo (§7) → `build.py`.
 
 ## 6. Temps de route — pipeline OSRM
 
@@ -154,7 +154,7 @@ Règles : uniquement Wikimedia Commons / Wikipedia (licences libres), **crédit 
 2. Garder la liste validée `PF = [[id, "File:…"], …]`.
 3. `src/tools/photos_download.js` : télécharge via `Special:FilePath/<fichier>?width=640`, recadre sur canvas en **480×270 JPEG q=0.62** → `IMS={id:dataURL}`. Exporter par lots ≤ 235 000 caractères (limite des résultats d'outil ~262 K) vers `src/tools/out/new_photos.json` ; crédits (auteur, licence, page) depuis l'API `imageinfo&iiprop=extmetadata` vers `out/new_credits.json`.
 4. `python3 src/tools/photos_merge.py` → ajoute à `photos.json` (racine) et renseigne `photo/credit/credit_url` dans `data.json`.
-5. `python3 src/build.py`, bump `sw.js`.
+5. `python3 src/build.py`.
 
 ## 8. Choix et préférences de Lionel (à respecter)
 
@@ -191,6 +191,6 @@ Règles : uniquement Wikimedia Commons / Wikipedia (licences libres), **crédit 
 
 ## 11. Pour Claude Code (nouvelle session)
 
-- Lire ce fichier d'abord. Modifier **`src/template.html`** / **`src/data.json`**, jamais `index.html` directement, puis `python3 src/build.py`, bump `sw.js`, tester, committer index.html + src + sw.js ensemble.
+- Lire ce fichier d'abord. Modifier **`src/template.html`** / **`src/data.json`**, jamais `index.html` directement, puis `python3 src/build.py`, tester, committer index.html + src + sw.js ensemble.
 - Messages de commit en français, courts.
 - Ne jamais réintroduire d'adresse privée ; ne pas saisir de mots de passe/identifiants (Lionel s'occupe des connexions).
