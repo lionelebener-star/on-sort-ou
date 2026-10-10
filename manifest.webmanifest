@@ -1,0 +1,25 @@
+{
+ "name": "On sort où ?!",
+ "short_name": "On sort où",
+ "description": "Sorties en famille en Suisse (0–12 ans)",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#FFF6E0",
+ "theme_color": "#FFF6E0",
+ "lang": "fr",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any maskable"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
