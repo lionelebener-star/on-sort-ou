@@ -207,6 +207,22 @@ html.m .qd{font-size:.58rem;padding:2px 4px}html.m .qd b{font-size:.7rem}
 footer{margin-top:40px;font-size:.75rem;color:var(--muted);max-width:75ch}
 .ver{margin:8px 0 0;font-size:.7rem;color:var(--muted);opacity:.8}
 [hidden]{display:none!important}
+.fav{position:absolute;top:10px;right:52px;z-index:2;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:rgb(255 255 255/.6);cursor:pointer;font-size:1.25rem;line-height:1;display:grid;place-items:center;color:var(--ink)}
+.fav[aria-pressed="true"]{background:var(--yel);box-shadow:2px 2px 0 var(--ink)}
+.card.fc{overflow:visible;perspective:1400px;cursor:pointer;border:0;box-shadow:none;background:none}
+.fl{position:relative;display:flex;flex-direction:column;flex:1;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,.7,.35,1.15)}
+.fc.flip .fl{transform:rotateY(180deg)}
+.face{position:relative;flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--c);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.face.bk{transform:rotateY(180deg)}
+.fc:not(.flip) .bk,.fc.flip .fr{position:absolute;inset:0;visibility:hidden;transition:visibility 0s .3s}
+.fr .cb>p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hint{margin-top:auto;align-self:flex-end;font-size:.72rem;font-weight:700;opacity:.75}
+.bk .cb{padding-top:14px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:.8rem;line-height:1.35;margin:2px 0}
+.dl dt{font-weight:700;white-space:nowrap}.dl dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.favb{font-weight:700}
+.favhd{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){.fl{transition:none}}
 @media (prefers-reduced-motion:no-preference){.card{transition:transform .12s}.card:hover{transform:translate(-1px,-1px)}}
 </style>
 
@@ -214,6 +230,7 @@ footer{margin-top:40px;font-size:.75rem;color:var(--muted);max-width:75ch}
   <div class="top">
     <button class="pill" id="oriBtn" aria-haspopup="dialog"><span id="oriPin">📍</span> <span id="oriName">Rüti b. Büren</span> ▾</button>
     <span class="sp"></span>
+    <button class="pill favb" id="favBtn" type="button" hidden aria-pressed="false">★ <span id="favN">0</span></button>
     <div class="tog" role="group" aria-label="Affichage"><button id="vList" aria-pressed="true">☰ <span data-i="list">Liste</span></button><button id="vRad" aria-pressed="false">◎ <span data-i="radar">Rayon</span></button></div>
     <button class="pill inst" id="instBtn" type="button" hidden data-i="inst">📲 Installer l'app</button>
     <div class="tog" role="group" aria-label="Langue"><button data-l="fr" aria-pressed="true">FR</button><button data-l="de" aria-pressed="false">DE</button><button data-l="es" aria-pressed="false">ES</button></div>
@@ -235,7 +252,7 @@ footer{margin-top:40px;font-size:.75rem;color:var(--muted);max-width:75ch}
 
   <main id="main"></main>
   <footer data-i="foot">Temps de route estimés en voiture, sans trafic : le bouton Itinéraire ouvre Google Maps avec le trafic réel. Prix et horaires vérifiés en octobre 2026 sur les sites officiels ; à confirmer avant de partir.</footer>
-  <p class="ver">Version 8 · 10.10.2026 · 09:41</p>
+  <p class="ver">Version 9 · 12.10.2026 · 15:00</p>
 </div>
 
 <div class="scrim" id="ageSheet" hidden><div class="sheet b" role="dialog" aria-modal="true" aria-labelledby="ageH">
@@ -354,22 +371,22 @@ const T={fr:{list:"Liste",radar:"Rayon",quad:{cul:"🎭 Culture",spo:"⚽ Sport"
   yrs:"ans",indoor:"Dedans",ph:"Chercher…",foot:"Temps de route en voiture calculés avec OpenStreetMap, sans trafic : le bouton Itinéraire ouvre Google Maps avec le trafic réel. Prix et horaires vérifiés en octobre 2026 sur les sites officiels ; à confirmer avant de partir.",
   ageQ:"De quel âge à quel âge ?",ageSub:"Tes enfants ont entre…",from:"D'où partez-vous ?",near:"près de",geo:"Utiliser ma position",geoWait:"Je cherche ta position…",geoErr:"Position indisponible ici. Autorise la localisation ou choisis ta ville dans la liste.",geoOut:"Tu sembles hors de Suisse : les temps de route sont approximatifs.",oriPh:"Ta ville ou ton village…",oriBig:"Grandes villes",oriRecent:"Récents",other:"Autre ville…",noTown:q=>`Pas trouvé « ${q} ». Essaie une ville voisine ou utilise ta position.`,see:n=>`Voir ${n} activités`,res:n=>`${n} résultat${n>1?"s":""}`,
   route:"Itinéraire",site:"Site",more:n=>`Voir ${n} de plus`,none:"Rien trouvé avec ces filtres. Élargis l'âge ou change de type.",wk:"Ce week-end",soon:"Bientôt",trend:"Tendance",now:"En cours",
-  age:(a,b)=>`${a}–${b} ans`,mine:"★ Mes enfants",who:"Pour qui ?",addKid:"＋ Ajouter un enfant",kidName:"Prénom",born:y=>`né·e en ${y}`,yo:n=>n<1?"bébé":n===1?"1 an":`${n} ans`,save:"Enregistrer comme « mes enfants »",all:"Tous",in:"intérieur",tap:"Touche une zone pour zoomer, puis une pastille pour voir l'activité.",zout:"Tout voir",far:"plus loin",vis:"Visité",home:"maison",fb:"Ton avis",fbH:"Une idée, un manque, un bug ?",fbSub:"Dis-nous tout : une fonction, une activité qui manque, une erreur… On lit chaque message.",fbPh:"Ton message…",fbMail:"Ton email (facultatif, pour une réponse)",fbSend:"Envoyer",fbOk:"Merci, c'est reçu ! 🙌",fbCats:["💡 Idée","➕ Activité qui manque","🐞 Erreur","💬 Autre"],inst:"📲 Installer l'app",instH:"Installe l'app sur ton natel",instIos:["Ouvre go.vamox.ch dans <b>Safari</b>","Touche le bouton <b>Partager</b> <span class='ib'>⬆︎</span> en bas","Choisis <b>« Sur l'écran d'accueil »</b> puis <b>Ajouter</b>"],instAnd:["Ouvre go.vamox.ch dans <b>Chrome</b>","Touche le menu <b>⋮</b> en haut à droite","Choisis <b>« Installer l'application »</b>"],instOk:"C'est fait ! L'app a son icône sur ton écran d'accueil.",go:"C'est parti !",sea:{printemps:"🌷 Printemps",ete:"☀️ Été",automne:"🍂 Automne",hiver:"❄️ Hiver"},close:"Fermer"},
+  age:(a,b)=>`${a}–${b} ans`,mine:"★ Mes enfants",who:"Pour qui ?",addKid:"＋ Ajouter un enfant",kidName:"Prénom",born:y=>`né·e en ${y}`,yo:n=>n<1?"bébé":n===1?"1 an":`${n} ans`,save:"Enregistrer comme « mes enfants »",all:"Tous",in:"intérieur",tap:"Touche une zone pour zoomer, puis une pastille pour voir l'activité.",zout:"Tout voir",far:"plus loin",vis:"Visité",fav:"Favori",favs:"Mes favoris",favNone:"Pas encore de favoris : touche ☆ sur une carte pour l'ajouter.",favClose:"✕ Fermer",flip:"Plus d'infos ↻",back:"↩ Retour",outd:"extérieur",lPlace:"Lieu",lAge:"Âge",lDur:"Durée",lPrice:"Prix",lWhen:"Quand",lTrip:"Trajet",lKind:"Où",home:"maison",fb:"Ton avis",fbH:"Une idée, un manque, un bug ?",fbSub:"Dis-nous tout : une fonction, une activité qui manque, une erreur… On lit chaque message.",fbPh:"Ton message…",fbMail:"Ton email (facultatif, pour une réponse)",fbSend:"Envoyer",fbOk:"Merci, c'est reçu ! 🙌",fbCats:["💡 Idée","➕ Activité qui manque","🐞 Erreur","💬 Autre"],inst:"📲 Installer l'app",instH:"Installe l'app sur ton natel",instIos:["Ouvre go.vamox.ch dans <b>Safari</b>","Touche le bouton <b>Partager</b> <span class='ib'>⬆︎</span> en bas","Choisis <b>« Sur l'écran d'accueil »</b> puis <b>Ajouter</b>"],instAnd:["Ouvre go.vamox.ch dans <b>Chrome</b>","Touche le menu <b>⋮</b> en haut à droite","Choisis <b>« Installer l'application »</b>"],instOk:"C'est fait ! L'app a son icône sur ton écran d'accueil.",go:"C'est parti !",sea:{printemps:"🌷 Printemps",ete:"☀️ Été",automne:"🍂 Automne",hiver:"❄️ Hiver"},close:"Fermer"},
  de:{list:"Liste",radar:"Radius",quad:{cul:"🎭 Kultur",spo:"⚽ Sport",out:"🌳 Draussen",in:"☂️ Drinnen"},h1:"Wohin geht's ?!",lead:"Familienausflüge in der ganzen Schweiz: Schlösser, Kugelbahnwege, Zoos, Museen, Theater und aktuelle Events, sortiert ab deinem Startort.",
   yrs:"J.",indoor:"Drinnen",ph:"Suchen…",foot:"Autofahrzeiten mit OpenStreetMap berechnet, ohne Verkehr: Der Knopf Route öffnet Google Maps mit Live-Verkehr. Preise und Zeiten im Oktober 2026 auf den offiziellen Websites geprüft; vor dem Ausflug bestätigen.",
   ageQ:"Von welchem bis zu welchem Alter?",ageSub:"Deine Kinder sind zwischen…",from:"Wo startet ihr?",near:"bei",geo:"Meinen Standort verwenden",geoWait:"Standort wird gesucht…",geoErr:"Standort hier nicht verfügbar. Ortung erlauben oder Stadt aus der Liste wählen.",geoOut:"Du scheinst ausserhalb der Schweiz zu sein: Fahrzeiten sind ungefähr.",oriPh:"Deine Stadt oder dein Dorf…",oriBig:"Grosse Städte",oriRecent:"Zuletzt",other:"Andere Stadt…",noTown:q=>`«${q}» nicht gefunden. Versuche einen Nachbarort oder deinen Standort.`,see:n=>`${n} Aktivitäten zeigen`,res:n=>`${n} Treffer`,
   route:"Route",site:"Website",more:n=>`${n} weitere zeigen`,none:"Nichts gefunden. Alter erweitern oder Typ wechseln.",wk:"Dieses Wochenende",soon:"Demnächst",trend:"Im Trend",now:"Läuft gerade",
-  age:(a,b)=>`${a}–${b} J.`,mine:"★ Meine Kinder",who:"Für wen?",addKid:"＋ Kind hinzufügen",kidName:"Vorname",born:y=>`Jahrgang ${y}`,yo:n=>n<1?"Baby":n===1?"1 Jahr":`${n} Jahre`,save:"Als «meine Kinder» speichern",all:"Alle",in:"drinnen",tap:"Tippe auf eine Zone zum Zoomen, dann auf einen Punkt für die Aktivität.",zout:"Alles zeigen",far:"weiter",vis:"Besucht",home:"Zuhause",fb:"Feedback",fbH:"Idee, Lücke, Fehler?",fbSub:"Erzähl uns alles: eine Funktion, ein fehlendes Angebot, ein Fehler… Wir lesen jede Nachricht.",fbPh:"Deine Nachricht…",fbMail:"Deine E-Mail (optional, für eine Antwort)",fbSend:"Senden",fbOk:"Danke, ist angekommen! 🙌",fbCats:["💡 Idee","➕ Fehlendes Angebot","🐞 Fehler","💬 Anderes"],inst:"📲 App installieren",instH:"Installiere die App auf deinem Handy",instIos:["Öffne go.vamox.ch in <b>Safari</b>","Tippe unten auf <b>Teilen</b> <span class='ib'>⬆︎</span>","Wähle <b>«Zum Home-Bildschirm»</b> und dann <b>Hinzufügen</b>"],instAnd:["Öffne go.vamox.ch in <b>Chrome</b>","Tippe oben rechts auf das Menü <b>⋮</b>","Wähle <b>«App installieren»</b>"],instOk:"Fertig! Die App hat jetzt ihr Symbol auf deinem Home-Bildschirm.",go:"Los geht's!",sea:{printemps:"🌷 Frühling",ete:"☀️ Sommer",automne:"🍂 Herbst",hiver:"❄️ Winter"},close:"Schliessen"},
+  age:(a,b)=>`${a}–${b} J.`,mine:"★ Meine Kinder",who:"Für wen?",addKid:"＋ Kind hinzufügen",kidName:"Vorname",born:y=>`Jahrgang ${y}`,yo:n=>n<1?"Baby":n===1?"1 Jahr":`${n} Jahre`,save:"Als «meine Kinder» speichern",all:"Alle",in:"drinnen",tap:"Tippe auf eine Zone zum Zoomen, dann auf einen Punkt für die Aktivität.",zout:"Alles zeigen",far:"weiter",vis:"Besucht",fav:"Favorit",favs:"Meine Favoriten",favNone:"Noch keine Favoriten: Tippe auf ☆ auf einer Karte, um sie zu speichern.",favClose:"✕ Schliessen",flip:"Mehr Infos ↻",back:"↩ Zurück",outd:"draussen",lPlace:"Ort",lAge:"Alter",lDur:"Dauer",lPrice:"Preise",lWhen:"Wann",lTrip:"Fahrt",lKind:"Wo",home:"Zuhause",fb:"Feedback",fbH:"Idee, Lücke, Fehler?",fbSub:"Erzähl uns alles: eine Funktion, ein fehlendes Angebot, ein Fehler… Wir lesen jede Nachricht.",fbPh:"Deine Nachricht…",fbMail:"Deine E-Mail (optional, für eine Antwort)",fbSend:"Senden",fbOk:"Danke, ist angekommen! 🙌",fbCats:["💡 Idee","➕ Fehlendes Angebot","🐞 Fehler","💬 Anderes"],inst:"📲 App installieren",instH:"Installiere die App auf deinem Handy",instIos:["Öffne go.vamox.ch in <b>Safari</b>","Tippe unten auf <b>Teilen</b> <span class='ib'>⬆︎</span>","Wähle <b>«Zum Home-Bildschirm»</b> und dann <b>Hinzufügen</b>"],instAnd:["Öffne go.vamox.ch in <b>Chrome</b>","Tippe oben rechts auf das Menü <b>⋮</b>","Wähle <b>«App installieren»</b>"],instOk:"Fertig! Die App hat jetzt ihr Symbol auf deinem Home-Bildschirm.",go:"Los geht's!",sea:{printemps:"🌷 Frühling",ete:"☀️ Sommer",automne:"🍂 Herbst",hiver:"❄️ Winter"},close:"Schliessen"},
  es:{list:"Lista",radar:"Radio",quad:{cul:"🎭 Cultura",spo:"⚽ Deporte",out:"🌳 Fuera",in:"☂️ Dentro"},h1:"¿Adónde vamos ?!",lead:"Salidas en familia por toda Suiza: castillos, senderos de canicas, zoos, museos, espectáculos y eventos del momento, ordenados desde tu punto de partida.",
   yrs:"años",indoor:"Dentro",ph:"Buscar…",foot:"Tiempos de trayecto en coche calculados con OpenStreetMap, sin tráfico: el botón Ruta abre Google Maps con el tráfico real. Precios y horarios comprobados en octubre de 2026 en los sitios oficiales; confírmalos antes de salir.",
   ageQ:"¿De qué edad a qué edad?",ageSub:"Tus hijos tienen entre…",from:"¿Desde dónde salís?",near:"cerca de",geo:"Usar mi ubicación",geoWait:"Buscando tu ubicación…",geoErr:"Ubicación no disponible aquí. Permite la localización o elige tu ciudad en la lista.",geoOut:"Parece que estás fuera de Suiza: los tiempos son aproximados.",oriPh:"Tu ciudad o pueblo…",oriBig:"Grandes ciudades",oriRecent:"Recientes",other:"Otra ciudad…",noTown:q=>`No encontramos «${q}». Prueba una ciudad cercana o usa tu ubicación.`,see:n=>`Ver ${n} actividades`,res:n=>`${n} resultado${n>1?"s":""}`,
   route:"Ruta",site:"Web",more:n=>`Ver ${n} más`,none:"Nada encontrado con estos filtros. Amplía la edad o cambia de tipo.",wk:"Este fin de semana",soon:"Próximamente",trend:"Tendencia",now:"En curso",
-  age:(a,b)=>`${a}–${b} años`,mine:"★ Mis hijos",who:"¿Para quién?",addKid:"＋ Añadir un hijo",kidName:"Nombre",born:y=>`nacido/a en ${y}`,yo:n=>n<1?"bebé":n===1?"1 año":`${n} años`,save:"Guardar como «mis hijos»",all:"Todos",in:"interior",tap:"Toca una zona para hacer zoom y luego un punto para ver la actividad.",zout:"Ver todo",far:"más lejos",vis:"Visitado",home:"casa",fb:"Tu opinión",fbH:"¿Una idea, algo que falta, un error?",fbSub:"Cuéntanoslo todo: una función, una actividad que falta, un error… Leemos cada mensaje.",fbPh:"Tu mensaje…",fbMail:"Tu email (opcional, para responderte)",fbSend:"Enviar",fbOk:"¡Gracias, recibido! 🙌",fbCats:["💡 Idea","➕ Falta una actividad","🐞 Error","💬 Otro"],go:"¡Vamos!",sea:{printemps:"🌷 Primavera",ete:"☀️ Verano",automne:"🍂 Otoño",hiver:"❄️ Invierno"},close:"Cerrar",
+  age:(a,b)=>`${a}–${b} años`,mine:"★ Mis hijos",who:"¿Para quién?",addKid:"＋ Añadir un hijo",kidName:"Nombre",born:y=>`nacido/a en ${y}`,yo:n=>n<1?"bebé":n===1?"1 año":`${n} años`,save:"Guardar como «mis hijos»",all:"Todos",in:"interior",tap:"Toca una zona para hacer zoom y luego un punto para ver la actividad.",zout:"Ver todo",far:"más lejos",vis:"Visitado",fav:"Favorito",favs:"Mis favoritos",favNone:"Aún no hay favoritos: toca ☆ en una tarjeta para guardarla.",favClose:"✕ Cerrar",flip:"Más info ↻",back:"↩ Volver",outd:"exterior",lPlace:"Lugar",lAge:"Edad",lDur:"Duración",lPrice:"Precio",lWhen:"Cuándo",lTrip:"Trayecto",lKind:"Dónde",home:"casa",fb:"Tu opinión",fbH:"¿Una idea, algo que falta, un error?",fbSub:"Cuéntanoslo todo: una función, una actividad que falta, un error… Leemos cada mensaje.",fbPh:"Tu mensaje…",fbMail:"Tu email (opcional, para responderte)",fbSend:"Enviar",fbOk:"¡Gracias, recibido! 🙌",fbCats:["💡 Idea","➕ Falta una actividad","🐞 Error","💬 Otro"],go:"¡Vamos!",sea:{printemps:"🌷 Primavera",ete:"☀️ Verano",automne:"🍂 Otoño",hiver:"❄️ Invierno"},close:"Cerrar",
   inst:"📲 Instalar la app",instH:"Instala la app en tu móvil",instIos:["Abre go.vamox.ch en <b>Safari</b>","Toca el botón <b>Compartir</b> <span class='ib'>⬆︎</span> abajo","Elige <b>«Añadir a pantalla de inicio»</b> y luego <b>Añadir</b>"],instAnd:["Abre go.vamox.ch en <b>Chrome</b>","Toca el menú <b>⋮</b> arriba a la derecha","Elige <b>«Instalar aplicación»</b>"],instOk:"¡Listo! La app tiene su icono en tu pantalla de inicio."}};
 const ls={get(k,d){try{const v=localStorage.getItem("vx-"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("vx-"+k,JSON.stringify(v))}catch(e){}}};
 const SEAS=(m=>m<2||m===11?'hiver':m<5?'printemps':m<8?'ete':'automne')(new Date().getMonth());
 let S={sea:false,lang:ls.get("lang","fr"),ori:ls.get("ori","ruti"),type:ls.get("type","hot"),view:ls.get("view","list"),a:ls.get("age",[2,8]),mine:ls.get("mine",null),near:false,indoor:false,q:"",lim:24,sel:null};
-let VIS=ls.get("vis",{});
+let VIS=ls.get("vis",{}),FAV=ls.get("fav",[]);
 const t=k=>(T[S.lang]||T.fr)[k]??T.fr[k], L=x=>x;
 const nm=x=>x["name_"+S.lang]||x.name_fr, tx=(x,f)=>x[f+"_"+S.lang]||x[f+"_fr"]||"";
 const norm=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -409,6 +426,7 @@ const ageOk=x=>(x.age_min??0)<=S.a[1]&&(x.age_max??12)>=S.a[0];
 
 function filtered(){
   const q=norm(S.q.trim());
+  if(S.fav){const f=DATA.filter(x=>FAV.includes(x.id));f.forEach(x=>x._m=mins(x));return f.sort((a,b)=>a._m-b._m)}
   let arr=DATA.filter(x=>!isEv(x)||evLive(x));
   if(q) arr=arr.filter(x=>norm(x.name_fr+" "+x.name_de+" "+(x.name_es||"")+" "+x.town+" "+x.canton).includes(q));
   else{
@@ -427,35 +445,45 @@ function card(x,pop){
   const col=TCOL[x.type]||"#fff", kids=x["kids_"+S.lang]||x.kids_fr||[];
   const o=ori(), maps=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(o.q)}&destination=${encodeURIComponent(nm(x)+", "+x.town)}&travelmode=driving&hl=${S.lang}`;
   const tname=typeName(x.type);
-  const v=!!VIS[x.id], src=x.photo&&(PH[x.photo]||(/^https?:/.test(x.photo)?x.photo:(window.__noPhotos?null:x.photo)));
-  return `<article class="card b" style="--c:${col}" data-open="${x.id}">
-   <div class="ph">${src?`<img src="${src}" alt="${nm(x)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false;this.parentNode.querySelector('.cr')?.remove()"><div class="ill" hidden>${svgIll(x)||`${scatter(x)}<i class="lv ty-${x.type}"><em>${emo(x)}</em>${FX[x.type]||""}</i>`}</div>`:`<div class="ill">${svgIll(x)||`${scatter(x)}<i class="lv ty-${x.type}"><em>${emo(x)}</em>${FX[x.type]||""}</i>`}</div>`}
+  const v=!!VIS[x.id], f=FAV.includes(x.id), src=x.photo&&(PH[x.photo]||(/^https?:/.test(x.photo)?x.photo:(window.__noPhotos?null:x.photo)));
+  const ill=`${svgIll(x)||`${scatter(x)}<i class="lv ty-${x.type}"><em>${emo(x)}</em>${FX[x.type]||""}</i>`}`;
+  const trip=`🚗 ${fmt(x._m)}${x._k!=null?` · ${x._k<5?"< 5":x._k} km`:""}`;
+  const kick=`<div class="kick"><span>${TEMO[x.type]||""} ${tname}</span><span>· ${t("age")(x.age_min??0,x.age_max??12)}</span>${x.indoor?`<span>· ☔ ${t("in")}</span>`:""}</div>`;
+  const photo=`<div class="ph">${src?`<img src="${src}" alt="${nm(x)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false;this.parentNode.querySelector('.cr')?.remove()"><div class="ill" hidden>${ill}</div>`:`<div class="ill">${ill}</div>`}
     ${x.hot&&!isEv(x)?`<span class="hb"><span class="flame">🔥</span> ${t("trend")}</span>`:""}${isEv(x)?`<span class="hb">📅 ${fdate(x)}</span>`:""}
-    <span class="tb">🚗 ${fmt(x._m)}${x._k!=null?` · ${x._k<5?"< 5":x._k} km`:""}</span>${x.credit?`<a class="cr" href="${x.credit_url||"#"}" target="_blank" rel="noopener">📷 ${x.credit}</a>`:""}
-    <button class="vis" data-v="${x.id}" aria-pressed="${v}" title="${t("vis")}">${v?"✓":""}</button></div>
-   <div class="cb">
-   <div class="kick"><span>${TEMO[x.type]||""} ${tname}</span><span>· ${t("age")(x.age_min??0,x.age_max??12)}</span>${x.indoor?`<span>· ☔ ${t("in")}</span>`:""}</div>
-   <h2>${nm(x)}</h2>
-   ${isEv(x)&&tx(x,"when")?`<div class="meta">🕒 ${tx(x,"when")}</div>`:""}
+    <span class="tb">${trip}</span>${x.credit?`<a class="cr" href="${x.credit_url||"#"}" target="_blank" rel="noopener">📷 ${x.credit}</a>`:""}
+    <button class="fav" data-f="${x.id}" aria-pressed="${f}" title="${t("fav")}" aria-label="${t("fav")}">${f?"★":"☆"}</button>
+    <button class="vis" data-v="${x.id}" aria-pressed="${v}" title="${t("vis")}">${v?"✓":""}</button></div>`;
+  const dur=tx(x,"duration"), row=(k,val)=>val?`<dt>${k}</dt><dd>${val}</dd>`:"";
+  const details=`${isEv(x)&&tx(x,"when")?`<div class="meta">🕒 ${tx(x,"when")}</div>`:""}
    <p>${tx(x,"desc")}</p>
    ${kids.length?`<div class="kids">${kids.map(k=>`<span>${k}</span>`).join("")}</div>`:""}
-   <div class="meta">📍 ${x.town} (${x.canton})${x.duration_fr&&!isEv(x)?" · ⏱ "+x.duration_fr:""}<br>💰 ${tx(x,"price")}${!isEv(x)?`<br>🗓 ${tx(x,"season")}`:""}</div>
-   <div class="links"><a href="${maps}" target="_blank" rel="noopener">🧭 ${t("route")}</a><a href="${x.site}" target="_blank" rel="noopener">↗ ${t("site")}</a></div>
-   </div>
-  </article>`;
+   <dl class="dl">${row("📍 "+t("lPlace"),`${x.town} (${x.canton})`)}${row("🧭 "+t("lTrip"),trip.slice(3))}${row("👧 "+t("lAge"),t("age")(x.age_min??0,x.age_max??12))}${row((x.indoor?"☔ ":"🌳 ")+t("lKind"),x.indoor?t("in"):t("outd"))}${!isEv(x)?row("⏱ "+t("lDur"),dur):""}${row("💰 "+t("lPrice"),tx(x,"price"))}${!isEv(x)?row("🗓 "+t("lWhen"),tx(x,"season")):""}</dl>
+   <div class="links"><a href="${maps}" target="_blank" rel="noopener">🧭 ${t("route")}</a><a href="${x.site}" target="_blank" rel="noopener">↗ ${t("site")}</a></div>`;
+  if(pop) return `<article class="card b" style="--c:${col}" data-open="${x.id}">${photo}<div class="cb">${kick}<h2>${nm(x)}</h2>${details}</div></article>`;
+  return `<article class="card fc" style="--c:${col}" data-open="${x.id}" tabindex="0" aria-expanded="false">
+  <div class="fl">
+   <div class="face fr b">${photo}
+    <div class="cb">${kick}<h2>${nm(x)}</h2>
+     ${isEv(x)&&tx(x,"when")?`<div class="meta">🕒 ${tx(x,"when")}</div>`:""}
+     <p>${tx(x,"desc")}</p>
+     <span class="hint">${t("flip")}</span></div></div>
+   <div class="face bk b"><div class="cb">${kick}<h2>${nm(x)}</h2>${details}<span class="hint">${t("back")}</span></div></div>
+  </div></article>`;
 }
 function renderList(arr){
   const main=document.getElementById("main");
+  if(S.fav){main.innerHTML=`<div class="grid"><div class="favhd"><div class="sec">★ ${t("favs")} (${arr.length})</div><button class="pill" id="favOff">${t("favClose")}</button></div>${arr.length?arr.map(x=>card(x)).join(""):`<p class="empty">${t("favNone")}</p>`}</div>`;return}
   if(!arr.length){main.innerHTML=`<div class="emptyx"><span class="mag" aria-hidden="true">🔍</span><p class="empty">${t("none")}</p></div>`;return}
   let html="";
   if(S.type==="hot"&&!S.q){
     const wk=arr.filter(x=>isEv(x)&&evWk(x)), now=arr.filter(x=>isEv(x)&&!evWk(x)&&evNow(x)), soon=arr.filter(x=>isEv(x)&&!evWk(x)&&!evNow(x)), tr=arr.filter(x=>!isEv(x));
     soon.sort((a,b)=>a.start<b.start?-1:1);
-    for(const [h,l] of [[t("wk"),wk],[t("now"),now],[t("soon"),soon],[t("trend"),tr]]) if(l.length) html+=`<div class="sec">${h}</div>`+l.map(card).join("");
+    for(const [h,l] of [[t("wk"),wk],[t("now"),now],[t("soon"),soon],[t("trend"),tr]]) if(l.length) html+=`<div class="sec">${h}</div>`+l.map(x=>card(x)).join("");
     main.innerHTML=`<div class="grid">${html}</div>`;
   } else {
     const show=arr.slice(0,S.lim);
-    main.innerHTML=`<div class="grid">${show.map(card).join("")}</div>`+(arr.length>S.lim?`<button class="pill more" id="moreBtn">${t("more")(arr.length-S.lim)}</button>`:"");
+    main.innerHTML=`<div class="grid">${show.map(x=>card(x)).join("")}</div>`+(arr.length>S.lim?`<button class="pill more" id="moreBtn">${t("more")(arr.length-S.lim)}</button>`:"");
   }
 }
 /* cadran : haut = dehors, bas = dedans ; gauche = culture, droite = sport */
@@ -551,6 +579,7 @@ function render(){
   {const ks=kidsFor(S.a);document.getElementById("ageTxt").textContent=ks?ks:`${S.a[0]}–${S.a[1]}`;document.querySelector('#ageBtn [data-i="yrs"]').hidden=!!ks}
   document.getElementById("seaBtn").setAttribute("aria-pressed",S.sea);document.getElementById("seaTxt").textContent=t("sea")[SEAS];
   document.getElementById("nearBtn").setAttribute("aria-pressed",S.near);document.getElementById("inBtn").setAttribute("aria-pressed",S.indoor);
+  drawFav();
   const arr=filtered();
   rollCount(arr.length);
   drawTitle();
@@ -560,8 +589,10 @@ function render(){
 function save(){ls.set("lang",S.lang);ls.set("ori",S.ori);ls.set("type",S.type);ls.set("view",S.view);ls.set("age",S.a)}
 document.addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b){if(e.target.closest("#radar"))radarTap(e,null);return}
-  if(b.dataset.t){FX_NEXT="cascade";S.type=b.dataset.t;S.lim=24;S.sel=null;save();render();b.scrollIntoView?.({inline:"center",block:"nearest"});return}
+  if(b.dataset.t){FX_NEXT="cascade";S.fav=false;S.type=b.dataset.t;S.lim=24;S.sel=null;save();render();b.scrollIntoView?.({inline:"center",block:"nearest"});return}
   if(b.dataset.l){S.lang=b.dataset.l;save();render();return}
+  if(b.dataset.f){const id=b.dataset.f,on=!FAV.includes(id);FAV=on?[...FAV,id]:FAV.filter(z=>z!==id);ls.set("fav",FAV);
+    document.querySelectorAll(`[data-f="${id}"]`).forEach(z=>{z.setAttribute("aria-pressed",on);z.textContent=on?"★":"☆"});if(on)stamp(b);drawFav();if(S.fav&&!on)render();return}
   if(b.dataset.v){const id=b.dataset.v;VIS[id]=!VIS[id];if(!VIS[id])delete VIS[id];ls.set("vis",VIS);b.setAttribute("aria-pressed",!!VIS[id]);b.textContent=VIS[id]?"✓":"";if(VIS[id])stamp(b);return}
   if(b.dataset.d){radarTap(e,b);return}
   if(b.id==="zOut"){ZM={z:1,cx:50,cy:50};applyZoom();return}
@@ -574,6 +605,8 @@ document.addEventListener("click",e=>{
   switch(b.id){
     case "vList":FX_NEXT="cascade";S.view="list";save();render();break;
     case "vRad":FX_NEXT="radar";S.view="radar";save();render();break;
+    case "favBtn":FX_NEXT="cascade";S.fav=!S.fav;S.sel=null;render();window.scrollTo({top:document.getElementById("main").offsetTop-80,behavior:RM?"auto":"smooth"});break;
+    case "favOff":FX_NEXT="cascade";S.fav=false;render();break;
     case "moreBtn":S.lim+=24;render();break;
     case "nearBtn":FX_NEXT="cascade";S.near=!S.near;render();break;
     case "inBtn":FX_NEXT="cascade";S.indoor=!S.indoor;render();break;
@@ -591,7 +624,11 @@ document.addEventListener("click",e=>{
     case "onbGo":ls.set("onb",1);closeSheet("onbSheet");render();break;
   }
 });
-document.addEventListener("click",e=>{if(e.target.closest("a,button,.pop"))return;const c=e.target.closest("[data-open]");if(c&&!c.closest("#popBody")){}});
+function drawFav(){const b=document.getElementById("favBtn");b.hidden=!FAV.length&&!S.fav;b.setAttribute("aria-pressed",!!S.fav);b.title=t("favs");document.getElementById("favN").textContent=FAV.length}
+function flipCard(c){const h0=c.offsetHeight,on=c.classList.toggle("flip");c.setAttribute("aria-expanded",on);const h1=c.offsetHeight;
+  if(!RM&&c.animate&&h0!==h1)c.animate([{height:h0+"px"},{height:h1+"px"}],{duration:600,easing:"cubic-bezier(.3,.7,.35,1)"})}
+document.addEventListener("click",e=>{if(e.target.closest("a,button,.pop"))return;const c=e.target.closest(".card.fc");if(c)flipCard(c)});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches?.(".card.fc")){e.preventDefault();flipCard(e.target)}});
 document.querySelectorAll(".scrim").forEach(s=>s.addEventListener("click",e=>{if(e.target===s)closeSheet(s.id)}));
 document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".scrim:not([hidden])").forEach(s=>closeSheet(s.id))});
 function closeSheet(id){const sc=document.getElementById(id);if(sc.hidden||sc.dataset.closing)return;const sh=sc.querySelector(".sheet");
