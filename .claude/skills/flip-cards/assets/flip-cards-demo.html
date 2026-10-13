@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Flip cards — démo</title>
+<style>
+/* ================= THÈME (à adapter à l'app) ================= */
+:root{--ink:#111;--bg:#FFF6E0;--card:#fff;--muted:#555;--yel:#FFE14D;--ok:#22a06b;--hot:#FF5A36}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sp{flex:1}
+h1{margin:14px 0 4px}
+.pill{border:2px solid var(--ink);border-radius:999px;padding:6px 12px;background:var(--card);font:inherit;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--yel)}
+.empty{grid-column:1/-1;color:var(--muted)}
+[hidden]{display:none!important}
+
+/* ================= GRILLE ================= */
+/* 1 colonne sur téléphone, 2 sur tablette, 3 sur grand écran (container query sur #main) */
+#main{container-type:inline-size}
+.grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:14px}
+@container (min-width:540px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container (min-width:860px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.sec{grid-column:1/-1;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.favhd{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* ================= CARTE (contenu) ================= */
+.b{border:2.5px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink)}
+.card{display:flex;flex-direction:column;min-width:0;position:relative}
+.ph{position:relative;aspect-ratio:16/9;border-bottom:2.5px solid var(--ink);overflow:hidden;background:var(--c)}
+.ph img{display:block;width:100%;height:100%;object-fit:cover}
+.ill{position:absolute;inset:0;display:grid;place-items:center;font-size:64px}
+.tb{position:absolute;left:10px;bottom:10px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:3px 10px;font-size:.78rem;font-weight:700}
+.cb{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;background:var(--c);flex:1}
+.card h2{font-size:1.15rem;line-height:1.15;margin:0}
+.card p{margin:0;font-size:.88rem}
+.kick{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tags span{font-size:.75rem;border:1.5px solid var(--ink);border-radius:999px;padding:1px 8px;background:rgb(255 255 255/.6)}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.links a{font-size:.8rem;font-weight:700;color:var(--ink);text-decoration:none;background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:5px 10px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:.82rem;margin:2px 0}
+.dl dt{font-weight:700;white-space:nowrap}.dl dd{margin:0;min-width:0;overflow-wrap:anywhere}
+
+/* ================= BOUTONS RONDS SUR LA PHOTO ================= */
+.fav,.vis{position:absolute;top:10px;z-index:2;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:rgb(255 255 255/.6);cursor:pointer;display:grid;place-items:center;line-height:1;color:var(--ink)}
+.fav{right:52px;font-size:1.25rem}
+.fav[aria-pressed="true"]{background:var(--yel);box-shadow:2px 2px 0 var(--ink)}
+.vis{right:10px;border-style:dashed;font-weight:700}
+.vis[aria-pressed="true"]{border-style:solid;background:var(--ok);color:#fff;box-shadow:2px 2px 0 var(--ink)}
+
+/* ================= RETOURNEMENT 3D ================= */
+/* L'article porte la perspective ; .fl tourne ; chaque face porte sa bordure (.b).
+   La face visible est dans le flux (donne la hauteur), l'autre est en absolu par-dessus. */
+.card.fc{perspective:1400px;cursor:pointer}
+.fl{position:relative;display:flex;flex-direction:column;flex:1;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,.7,.35,1.15)}
+.fc.flip .fl{transform:rotateY(180deg)}
+.face{position:relative;flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--c);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.face.bk{transform:rotateY(180deg)}
+/* face cachée : en absolu + invisible (sinon ses liens restent cliquables à travers l'autre face) ;
+   le délai .3s la fait disparaître à mi-rotation */
+.fc:not(.flip) .bk,.fc.flip .fr{position:absolute;inset:0;visibility:hidden;transition:visibility 0s .3s}
+.fr .cb>p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hint{margin-top:auto;align-self:flex-end;font-size:.72rem;font-weight:700;opacity:.75}
+.card.fc:focus-visible{outline:3px solid var(--hot);outline-offset:4px;border-radius:14px}
+@media (prefers-reduced-motion:reduce){.fl{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <strong>Démo</strong>
+    <span class="sp"></span>
+    <!-- Accès discret aux favoris : caché tant qu'il n'y a aucun favori -->
+    <button class="pill" id="favBtn" type="button" hidden aria-pressed="false">★ <span id="favN">0</span></button>
+    <button class="pill" data-l="fr">FR</button><button class="pill" data-l="de">DE</button><button class="pill" data-l="es">ES</button>
+  </div>
+  <h1 data-i="h1">Mes cartes</h1>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ================= DONNÉES D'EXEMPLE (remplacer par les vôtres) =================
+   Champs utilisés : id, color, emoji|photo, name_xx, desc_xx, tags_xx[], details_xx{} , site, badge */
+const DATA=[
+  {id:"waldegg",color:"#B9A6F5",emoji:"🏰",badge:"🚗 20 min",site:"https://example.org",
+   name_fr:"Château de Waldegg",name_de:"Schloss Waldegg",name_es:"Castillo de Waldegg",
+   desc_fr:"Maison de campagne baroque avec jardins à la française et vue sur le Jura. Lieu de rencontre entre Suisses alémaniques et romands.",
+   desc_de:"Barockes Landhaus mit französischem Garten und Jurablick. Begegnungsort zwischen Deutsch- und Westschweiz.",
+   desc_es:"Casa de campo barroca con jardines a la francesa y vistas al Jura.",
+   tags_fr:["👣 Piste des enfants","🌷 Jardins baroques"],tags_de:["👣 Kinderspur","🌷 Barockgarten"],tags_es:["👣 Pista infantil","🌷 Jardines barrocos"],
+   details_fr:{"📍 Lieu":"Feldbrunnen (SO)","⏱ Durée":"2 h","💰 Prix":"Adulte 10 · Enfant gratuit"},
+   details_de:{"📍 Ort":"Feldbrunnen (SO)","⏱ Dauer":"2 Std.","💰 Preise":"Erw. 10 · Kinder gratis"},
+   details_es:{"📍 Lugar":"Feldbrunnen (SO)","⏱ Duración":"2 h","💰 Precio":"Adulto 10 · Niños gratis"}},
+  {id:"musee",color:"#9FD3F7",emoji:"🧪",badge:"🚗 25 min",site:"https://example.org",
+   name_fr:"Musée des sciences",name_de:"Wissenschaftsmuseum",name_es:"Museo de ciencias",
+   desc_fr:"Plus de 10 univers à toucher : radios, ordinateurs, jeux vidéo rétro et expériences.",
+   desc_de:"Über 10 Welten zum Anfassen: Radios, Computer, Retro-Games und Experimente.",
+   desc_es:"Más de 10 mundos para tocar: radios, ordenadores, videojuegos retro.",
+   tags_fr:["🕹️ Jeux rétro"],tags_de:["🕹️ Retro-Games"],tags_es:["🕹️ Juegos retro"],
+   details_fr:{"📍 Lieu":"Derendingen (SO)","💰 Prix":"Adulte 32 · Enfant 15"},
+   details_de:{"📍 Ort":"Derendingen (SO)","💰 Preise":"Erw. 32 · Kinder 15"},
+   details_es:{"📍 Lugar":"Derendingen (SO)","💰 Precio":"Adulto 32 · Niño 15"}},
+  {id:"foxtrail",color:"#86D3B0",emoji:"🥾",badge:"🚗 15 min",site:"https://example.org",
+   name_fr:"Foxtrail",name_de:"Foxtrail",name_es:"Foxtrail",
+   desc_fr:"Jeu de piste en ville : on déchiffre des indices pour suivre le renard.",
+   desc_de:"Schnitzeljagd durch die Stadt: Hinweise entschlüsseln und dem Fuchs folgen.",
+   desc_es:"Gymkana urbana: descifra pistas para seguir al zorro.",
+   tags_fr:[],tags_de:[],tags_es:[],details_fr:{"📍 Lieu":"Soleure"},details_de:{"📍 Ort":"Solothurn"},details_es:{"📍 Lugar":"Soleura"}}
+];
+
+/* ================= TEXTES (i18n, repli sur FR) ================= */
+const T={
+ fr:{h1:"Mes cartes",fav:"Favori",vis:"Visité",favs:"Mes favoris",favNone:"Pas encore de favoris : touche ☆ sur une carte pour l'ajouter.",favClose:"✕ Fermer",flip:"Plus d'infos ↻",back:"↩ Retour",site:"Site",all:"Tout"},
+ de:{h1:"Meine Karten",fav:"Favorit",vis:"Besucht",favs:"Meine Favoriten",favNone:"Noch keine Favoriten: Tippe auf ☆ auf einer Karte.",favClose:"✕ Schliessen",flip:"Mehr Infos ↻",back:"↩ Zurück",site:"Website",all:"Alle"},
+ es:{h1:"Mis tarjetas",fav:"Favorito",vis:"Visitado",favs:"Mis favoritos",favNone:"Aún no hay favoritos: toca ☆ en una tarjeta.",favClose:"✕ Cerrar",flip:"Más info ↻",back:"↩ Volver",site:"Web",all:"Todo"}
+};
+
+/* ================= ÉTAT + STOCKAGE (localStorage protégé) ================= */
+const ls={get(k,d){try{const v=localStorage.getItem("fc-"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+          set(k,v){try{localStorage.setItem("fc-"+k,JSON.stringify(v))}catch(e){}}};
+const S={lang:ls.get("lang","fr"),fav:false};
+let FAV=ls.get("fav",[]), VIS=ls.get("vis",{});
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const t=k=>(T[S.lang]||T.fr)[k]??T.fr[k];
+const tx=(x,f)=>x[f+"_"+S.lang]||x[f+"_fr"]||"";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ================= RENDU D'UNE CARTE =================
+   pop=true → version « fiche » sans retournement (ex. dans une modale) */
+function card(x,pop){
+  const f=FAV.includes(x.id), v=!!VIS[x.id], tags=tx(x,"tags")||[], det=tx(x,"details")||{};
+  const photo=`<div class="ph">${x.photo?`<img src="${esc(x.photo)}" alt="" loading="lazy">`:`<div class="ill">${x.emoji||"⭐"}</div>`}
+    ${x.badge?`<span class="tb">${esc(x.badge)}</span>`:""}
+    <button class="fav" data-f="${x.id}" aria-pressed="${f}" title="${t("fav")}" aria-label="${t("fav")}">${f?"★":"☆"}</button>
+    <button class="vis" data-v="${x.id}" aria-pressed="${v}" title="${t("vis")}" aria-label="${t("vis")}">${v?"✓":""}</button></div>`;
+  const details=`<p>${esc(tx(x,"desc"))}</p>
+    ${tags.length?`<div class="tags">${tags.map(s=>`<span>${esc(s)}</span>`).join("")}</div>`:""}
+    <dl class="dl">${Object.entries(det).map(([k,val])=>`<dt>${esc(k)}</dt><dd>${esc(val)}</dd>`).join("")}</dl>
+    ${x.site?`<div class="links"><a href="${esc(x.site)}" target="_blank" rel="noopener">↗ ${t("site")}</a></div>`:""}`;
+  if(pop) return `<article class="card b" style="--c:${x.color}">${photo}<div class="cb"><h2>${esc(tx(x,"name"))}</h2>${details}</div></article>`;
+  return `<article class="card fc" style="--c:${x.color}" tabindex="0" aria-expanded="false">
+   <div class="fl">
+    <div class="face fr b">${photo}
+     <div class="cb"><h2>${esc(tx(x,"name"))}</h2><p>${esc(tx(x,"desc"))}</p><span class="hint">${t("flip")}</span></div></div>
+    <div class="face bk b"><div class="cb"><h2>${esc(tx(x,"name"))}</h2>${details}<span class="hint">${t("back")}</span></div></div>
+   </div></article>`;
+}
+
+/* ================= LISTE ================= */
+function render(){
+  document.documentElement.lang=S.lang;
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));
+  document.querySelectorAll("[data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===S.lang));
+  drawFav();
+  const main=document.getElementById("main");
+  if(S.fav){
+    const arr=DATA.filter(x=>FAV.includes(x.id));
+    // ⚠️ toujours x=>card(x) : arr.map(card) passerait l'index comme 2e argument (pop)
+    main.innerHTML=`<div class="grid"><div class="favhd"><div class="sec">★ ${t("favs")} (${arr.length})</div><button class="pill" id="favOff">${t("favClose")}</button></div>${arr.length?arr.map(x=>card(x)).join(""):`<p class="empty">${t("favNone")}</p>`}</div>`;
+  } else main.innerHTML=`<div class="grid">${DATA.map(x=>card(x)).join("")}</div>`;
+}
+function drawFav(){const b=document.getElementById("favBtn");b.hidden=!FAV.length&&!S.fav;b.setAttribute("aria-pressed",S.fav);b.title=t("favs");document.getElementById("favN").textContent=FAV.length}
+
+/* ================= ANIMATIONS ================= */
+function stamp(el){if(RM||!el.animate)return;el.animate([{transform:"scale(2.4) rotate(-20deg)",opacity:0},{transform:"scale(.85) rotate(4deg)",opacity:1,offset:.6},{transform:"scale(1)"}],{duration:420,easing:"cubic-bezier(.2,.8,.3,1.2)"})}
+function flipCard(c){
+  const h0=c.offsetHeight, on=c.classList.toggle("flip");
+  c.setAttribute("aria-expanded",on);
+  const h1=c.offsetHeight;   // la face qui devient visible passe dans le flux → nouvelle hauteur
+  if(!RM&&c.animate&&h0!==h1)c.animate([{height:h0+"px"},{height:h1+"px"}],{duration:600,easing:"cubic-bezier(.3,.7,.35,1)"});
+}
+
+/* ================= ÉVÉNEMENTS (délégation sur document) ================= */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");
+  if(b){
+    if(b.dataset.f){const id=b.dataset.f,on=!FAV.includes(id);FAV=on?[...FAV,id]:FAV.filter(z=>z!==id);ls.set("fav",FAV);
+      // mettre à jour TOUTES les étoiles de cette activité (recto, modale…)
+      document.querySelectorAll(`[data-f="${id}"]`).forEach(z=>{z.setAttribute("aria-pressed",on);z.textContent=on?"★":"☆"});
+      if(on)stamp(b);drawFav();if(S.fav&&!on)render();return}
+    if(b.dataset.v){const id=b.dataset.v;VIS[id]=!VIS[id];if(!VIS[id])delete VIS[id];ls.set("vis",VIS);b.setAttribute("aria-pressed",!!VIS[id]);b.textContent=VIS[id]?"✓":"";if(VIS[id])stamp(b);return}
+    if(b.dataset.l){S.lang=b.dataset.l;ls.set("lang",S.lang);render();return}
+    if(b.id==="favBtn"){S.fav=!S.fav;render();return}
+    if(b.id==="favOff"){S.fav=false;render();return}
+    return;
+  }
+  if(e.target.closest("a"))return;              // les liens ne retournent pas la carte
+  const c=e.target.closest(".card.fc");if(c)flipCard(c);
+});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches?.(".card.fc")){e.preventDefault();flipCard(e.target)}});
+
+render();
+</script>
+</body>
+</html>
