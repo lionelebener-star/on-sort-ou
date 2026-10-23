@@ -17,7 +17,24 @@ mx = {'o': ids['O'], 'a': [x['id'] for x in D],
       'd': [''.join(r[col[x['id']]] if x['id'] in col else '!' for x in D) for r in rows],
       'k': [''.join(r[N + 1 + col[x['id']]] if x['id'] in col else '!' for x in D) for r in rows]}
 mxs = json.dumps(mx, separators=(',', ':')).replace('</', '<\\/')
-html = tpl.replace('__DATA__', d).replace('__TT__', tt).replace('__MX__', mxs).replace('__PH__', '{}')
+# Cartes « Ce week-end » (recherche du jeudi) : vérifiées avant publication
+WKF = S('weekend.json')
+WK = json.load(open(WKF, encoding='utf-8')) if os.path.exists(WKF) else {'items': []}
+TYPES = {'chateaux', 'sentiers', 'animaux', 'musees', 'jeux', 'eau', 'nature', 'trains', 'spectacles', 'pluie', 'fetes'}
+seen = {x["id"] for x in D}
+for x in WK.get('items', []):
+    miss = [k for k in ('id', 'type', 'town', 'canton', 'lat', 'lon', 'start', 'end', 'age_min', 'age_max', 'site')
+            + tuple(f + '_' + l for f in ('name', 'desc', 'price', 'when', 'why') for l in ('fr', 'de', 'es')) if x.get(k) in (None, '')]
+    assert not miss, f"weekend.json {x.get('id')}: champs manquants {miss}"
+    assert x['id'].startswith('wk-') and x["id"] not in seen, f"weekend.json: id invalide ou en double {x['id']}"
+    seen.add(x["id"])
+    assert x['type'] in TYPES, f"weekend.json {x['id']}: type inconnu {x['type']}"
+    assert re.fullmatch(r'\d{4}-\d\d-\d\d', x['start']) and re.fullmatch(r'\d{4}-\d\d-\d\d', x['end']) and x['start'] <= x['end'], f"weekend.json {x['id']}: dates"
+    assert 45.8 < x['lat'] < 47.9 and 5.9 < x['lon'] < 10.6, f"weekend.json {x['id']}: coordonnées hors de Suisse"
+    assert x['site'].startswith('https://'), f"weekend.json {x['id']}: site"
+    x['wk'] = True
+wks = json.dumps(WK, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+html = tpl.replace('__DATA__', d).replace('__TT__', tt).replace('__MX__', mxs).replace('__PH__', '{}').replace('__WK__', wks)
 html = html.replace('!/claude/.test(location.host)', '!/claude\\.ai|claudeusercontent/.test(location.host)')
 out = ('<!doctype html>\n<html lang="fr"><head><meta charset="utf-8"><script>window.__noPhotos=true</script>'
        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
@@ -40,4 +57,4 @@ else:
 out = out.replace('<p class="ver">__VER__</p>', ver)
 open(OUT, 'w', encoding='utf-8').write(out)
 print('version', num)
-print('index.html ok —', len(D), 'activités')
+print('index.html ok —', len(D), 'activités,', len(WK.get('items', [])), 'cartes week-end')
