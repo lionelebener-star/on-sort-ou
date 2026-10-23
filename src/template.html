@@ -206,6 +206,7 @@ footer{margin-top:40px;font-size:.75rem;color:var(--muted);max-width:75ch}
 [hidden]{display:none!important}
 .wkw{grid-column:1/-1;background:var(--card);padding:12px 14px;display:grid;gap:4px;font-size:.88rem}.wkw p{margin:0}.wkw .wkn{font-size:.8rem;opacity:.85}
 .why{font-weight:600}.chk{font-size:.8rem;background:rgb(255 255 255/.55);border:1.5px dashed var(--ink);border-radius:10px;padding:5px 8px}
+.toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99;background:var(--yel);padding:10px 16px;font-weight:700;max-width:calc(100% - 32px);text-align:center}
 .ver{cursor:default;-webkit-user-select:none;user-select:none}
 .fav{position:absolute;top:10px;right:52px;z-index:2;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:rgb(255 255 255/.6);cursor:pointer;font-size:1.25rem;line-height:1;display:grid;place-items:center;color:var(--ink)}
 .fav[aria-pressed="true"]{background:var(--yel);box-shadow:2px 2px 0 var(--ink)}
@@ -640,7 +641,12 @@ document.addEventListener("click",e=>{
 });
 function wkOn(){return ME&&DATA.some(x=>x.wk&&evLive(x))}
 let VTAP=[];document.querySelector(".ver").addEventListener("click",e=>{const n=Date.now();VTAP=VTAP.filter(z=>n-z<3000);VTAP.push(n);
-  if(VTAP.length>=5){VTAP=[];const on=!ME;ls.set("me",on?1:0);if(on)ls.set("type","week");e.target.textContent=t(on?"meOn":"meOff");setTimeout(()=>location.reload(),900)}});
+  if(VTAP.length>=5){VTAP=[];const on=!ME;ls.set("me",on?1:0);ls.set("type",on?"week":"hot");try{sessionStorage.setItem("vx-meMsg",on?"meOn":"meOff");history.scrollRestoration="manual"}catch(_){}
+    e.target.textContent=t(on?"meOn":"meOff");setTimeout(()=>{scrollTo(0,0);location.reload()},900)}});
+/* après l'activation : remonter en haut, message visible quelques secondes, indicateur permanent sur la ligne de version */
+if(ME)document.querySelector(".ver").textContent+=" · 📅";
+{let m=null;try{m=sessionStorage.getItem("vx-meMsg");sessionStorage.removeItem("vx-meMsg")}catch(_){}
+ if(m){scrollTo(0,0);const d=document.createElement("div");d.className="toast b";d.textContent=t(m);document.body.appendChild(d);setTimeout(()=>d.remove(),3500)}}
 function drawFav(){const b=document.getElementById("favBtn");b.hidden=!FAV.length&&!S.fav;b.setAttribute("aria-pressed",!!S.fav);b.title=t("favs");document.getElementById("favN").textContent=FAV.length}
 function flipCard(c){const h0=c.offsetHeight,on=c.classList.toggle("flip");c.setAttribute("aria-expanded",on);const h1=c.offsetHeight;
   if(!RM&&c.animate&&h0!==h1)c.animate([{height:h0+"px"},{height:h1+"px"}],{duration:600,easing:"cubic-bezier(.3,.7,.35,1)"})}
