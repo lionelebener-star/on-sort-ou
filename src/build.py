@@ -17,6 +17,18 @@ mx = {'o': ids['O'], 'a': [x['id'] for x in D],
       'd': [''.join(r[col[x['id']]] if x['id'] in col else '!' for x in D) for r in rows],
       'k': [''.join(r[N + 1 + col[x['id']]] if x['id'] in col else '!' for x in D) for r in rows]}
 mxs = json.dumps(mx, separators=(',', ':')).replace('</', '<\\/')
+# Activités ajoutées ou vérifiées par la Routine du jeudi : mêmes exigences que les cartes du week-end
+REQ = ('id', 'type', 'town', 'canton', 'lat', 'lon', 'age_min', 'age_max', 'site') + tuple(f + '_' + l for f in ('name', 'desc', 'price') for l in ('fr', 'de', 'es'))
+DT = re.compile(r'\d{4}-\d\d-\d\d')
+assert len({x['id'] for x in D}) == len(D), 'data.json : ids en double'
+for x in D:
+    for k in ('added', 'checked', 'start', 'end'):
+        assert k not in x or DT.fullmatch(x[k]), f"data.json {x['id']}: date {k} invalide"
+    if 'added' in x:
+        miss = [k for k in REQ if x.get(k) in (None, '')]
+        assert not miss, f"data.json {x['id']}: champs manquants {miss}"
+        assert 45.8 < x['lat'] < 47.9 and 5.9 < x['lon'] < 10.6, f"data.json {x['id']}: coordonnées hors de Suisse"
+        assert x['site'].startswith('https://'), f"data.json {x['id']}: site"
 # Cartes « Ce week-end » (recherche du jeudi) : vérifiées avant publication
 WKF = S('weekend.json')
 WK = json.load(open(WKF, encoding='utf-8')) if os.path.exists(WKF) else {'items': []}
