@@ -8,9 +8,9 @@ Lis d'abord `src/README.md` (structure, build, schéma de `data.json`).
 
 ## 0. Préparation
 
-1. `git pull origin main` (cloner le dépôt s'il n'est pas là).
+1. Attacher le dépôt avec l'outil `mcp__claude-code-remote__add_repo` (`owner: lionelebener-star`, `repo: on-sort-ou`, `access: push`), puis le cloner avec la commande renvoyée, ou faire `git pull origin main` s'il est déjà là. **Sans cette étape, le push est refusé (403).**
 2. Calculer en heure de Zurich : `aujourdhui`, le **samedi qui suit** et le dimanche.
-3. Vérifier l'accès web : `WebFetch` sur un site officiel (ex. `https://www.nmbe.ch/de/kalender`).
+3. Vérifier l'accès web avec l'outil **`WebFetch`** (pas `curl`) sur un site officiel, par ex. `https://www.nmbe.ch/de/kalender`. Utiliser ensuite `WebFetch` pour lire les pages officielles des musées et organisateurs.
    - Si les sites officiels sont inaccessibles, continuer avec la recherche web seule, être plus prudent (mettre plus de choses dans `check_*`) et le signaler dans le rapport.
 
 ## Règles communes (toutes les cartes)
