@@ -45,8 +45,23 @@ for x in WK.get('items', []):
     assert 45.8 < x['lat'] < 47.9 and 5.9 < x['lon'] < 10.6, f"weekend.json {x['id']}: coordonnées hors de Suisse"
     assert x['site'].startswith('https://'), f"weekend.json {x['id']}: site"
     x['wk'] = True
+# Liste perso permanente (Lionel seulement) : src/perso.json
+PF = S('perso.json')
+ME = json.load(open(PF, encoding='utf-8')) if os.path.exists(PF) else {'items': [], 'refs': []}
+for x in ME.get('items', []):
+    miss = [k for k in REQ if x.get(k) in (None, '')]
+    assert not miss, f"perso.json {x.get('id')}: champs manquants {miss}"
+    assert x['id'].startswith('me-') and x['id'] not in seen, f"perso.json: id invalide ou en double {x['id']}"
+    seen.add(x['id'])
+    assert x['type'] in TYPES, f"perso.json {x['id']}: type inconnu {x['type']}"
+    assert 45.8 < x['lat'] < 47.9 and 5.9 < x['lon'] < 10.6, f"perso.json {x['id']}: coordonnées hors de Suisse"
+    assert x['site'].startswith('https://'), f"perso.json {x['id']}: site"
+    x['me'] = True
+for r in ME.get('refs', []):
+    assert r in {x['id'] for x in D}, f"perso.json : référence inconnue {r}"
+mes = json.dumps(ME, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
 wks = json.dumps(WK, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
-html = tpl.replace('__DATA__', d).replace('__TT__', tt).replace('__MX__', mxs).replace('__PH__', '{}').replace('__WK__', wks)
+html = tpl.replace('__DATA__', d).replace('__TT__', tt).replace('__MX__', mxs).replace('__PH__', '{}').replace('__WK__', wks).replace('__ME__', mes)
 html = html.replace('!/claude/.test(location.host)', '!/claude\\.ai|claudeusercontent/.test(location.host)')
 out = ('<!doctype html>\n<html lang="fr"><head><meta charset="utf-8"><script>window.__noPhotos=true</script>'
        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
@@ -69,4 +84,4 @@ else:
 out = out.replace('<p class="ver">__VER__</p>', ver)
 open(OUT, 'w', encoding='utf-8').write(out)
 print('version', num)
-print('index.html ok —', len(D), 'activités,', len(WK.get('items', [])), 'cartes week-end')
+print('index.html ok —', len(D), 'activités,', len(WK.get('items', [])), 'cartes week-end,', len(ME.get('items', [])), 'adresses perso')

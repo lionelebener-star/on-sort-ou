@@ -208,6 +208,7 @@ footer{margin-top:40px;font-size:.75rem;color:var(--muted);max-width:75ch}
 .why{font-weight:600}.chk{font-size:.8rem;background:rgb(255 255 255/.55);border:1.5px dashed var(--ink);border-radius:10px;padding:5px 8px}
 .toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99;background:var(--yel);padding:10px 16px;font-weight:700;max-width:calc(100% - 32px);text-align:center}
 .nw{background:var(--hot);color:#fff;border-radius:6px;padding:0 6px}
+.pk{background:#BDEFC8;border-radius:6px;padding:0 5px}
 .upd{grid-column:1/-1;font-size:.78rem;font-weight:700;opacity:.7}
 .ver{cursor:default;-webkit-user-select:none;user-select:none}
 .fav{position:absolute;top:10px;right:52px;z-index:2;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:rgb(255 255 255/.6);cursor:pointer;font-size:1.25rem;line-height:1;display:grid;place-items:center;color:var(--ink)}
@@ -321,6 +322,7 @@ footer{margin-top:40px;font-size:.75rem;color:var(--muted);max-width:75ch}
 <script id="PHD" type="application/json">__PH__</script>
 <script id="TTD" type="application/json">__TT__</script>
 <script id="WKD" type="application/json">__WK__</script>
+<script id="MED" type="application/json">__ME__</script>
 <script id="MXD" type="application/json">__MX__</script>
 <script>
 // ⚙️ Réglages (à remplir lors de la mise en ligne)
@@ -368,9 +370,9 @@ const SVGILL={farm:'<svg class="svill" viewBox="0 0 320 180" aria-hidden="true">
 function svgIll(x){const n=nmAll(x);if(/halloween/i.test(n)&&/vapeur|dampf|train|bahn/i.test(n))return SVGILL.train;if(/courge|k[üu]rbis/i.test(n))return SVGILL.farm;return ""}
 function scatter(x){const e=FARMPUMP.test(nmAll(x))?"🎃":emo(x);if(e===(TEMO[x.type]||"✳️"))return "";return `<span class="scat" aria-hidden="true">${SCAT.map(([l,t,r,z])=>`<b style="left:${l}%;top:${t}%;transform:rotate(${r}deg) scale(${z})">${e}</b>`).join("")}</span>`}
 function emo(x){if(x.emo)return x.emo;if(FARMPUMP.test(nmAll(x)))return "🚜";const n=(x.name_fr||"")+" "+(x.name_de||"");for(const [r,e] of EMO_RULES)if(r.test(n))return e;return TEMO[x.type]||"✳️"}
-const TES={week:"Este fin de semana",hot:"Del momento",all:"Todo",chateaux:"Castillos",sentiers:"Senderos temáticos",animaux:"Animales",musees:"Museos",jeux:"Juegos y aventura",eau:"Agua y baños",nature:"Naturaleza y altura",trains:"Trenes y teleféricos",spectacles:"Espectáculos",pluie:"Día de lluvia",fetes:"Fiestas y mercados"};
-const WKT=["week","📅","Ce week-end","Dieses Wochenende","#FFE14D"];
-function typeName(k){const r=[WKT,...TYPES].find(y=>y[0]===k)||[];return S.lang==="es"?(TES[k]||r[2]||""):S.lang==="de"?(r[3]||""):(r[2]||"")}
+const TES={week:"Este fin de semana",perso:"Mis lugares",hot:"Del momento",all:"Todo",chateaux:"Castillos",sentiers:"Senderos temáticos",animaux:"Animales",musees:"Museos",jeux:"Juegos y aventura",eau:"Agua y baños",nature:"Naturaleza y altura",trains:"Trenes y teleféricos",spectacles:"Espectáculos",pluie:"Día de lluvia",fetes:"Fiestas y mercados"};
+const WKT=["week","📅","Ce week-end","Dieses Wochenende","#FFE14D"],PKT=["perso","🏠","Mes adresses","Meine Adressen","#BDEFC8"];
+function typeName(k){const r=[WKT,PKT,...TYPES].find(y=>y[0]===k)||[];return S.lang==="es"?(TES[k]||r[2]||""):S.lang==="de"?(r[3]||""):(r[2]||"")}
 const TCOL=Object.fromEntries(TYPES.map(t=>[t[0],t[4]])), TEMO=Object.fromEntries(TYPES.map(t=>[t[0],t[1]]));
 const T={fr:{list:"Liste",radar:"Rayon",quad:{cul:"🎭 Culture",spo:"⚽ Sport",out:"🌳 Dehors",in:"☂️ Dedans"},h1:"On sort où ?!",lead:"Sorties en famille dans toute la Suisse : châteaux, sentiers à billes, zoos, musées, spectacles et événements du moment, triés depuis ton lieu de départ.",
   yrs:"ans",indoor:"Dedans",ph:"Chercher…",foot:"Temps de route en voiture calculés avec OpenStreetMap, sans trafic : le bouton Itinéraire ouvre Google Maps avec le trafic réel. Prix et horaires vérifiés en octobre 2026 sur les sites officiels ; à confirmer avant de partir.",
@@ -395,6 +397,9 @@ let VIS=ls.get("vis",{}),FAV=ls.get("fav",[]);
 /* « Ce week-end » : cartes de la recherche du jeudi, visibles seulement sur l'appareil activé (5 touchers sur la version) */
 const WK=JSON.parse(document.getElementById("WKD").textContent||"{}"), ME=!!ls.get("me",0);
 if(ME&&WK.items)DATA=DATA.concat(WK.items);
+/* « Mes adresses » : liste perso permanente (src/perso.json) + références vers des activités publiques */
+const MEL=JSON.parse(document.getElementById("MED").textContent||"{}");if(ME&&MEL.items)DATA=DATA.concat(MEL.items);
+const PIDS=new Set(ME?[...(MEL.items||[]).map(x=>x.id),...(MEL.refs||[])]:[]);
 const t=k=>(T[S.lang]||T.fr)[k]??T.fr[k], L=x=>x;
 const nm=x=>x["name_"+S.lang]||x.name_fr, tx=(x,f)=>x[f+"_"+S.lang]||x[f+"_fr"]||"";
 const norm=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -435,6 +440,7 @@ const ageOk=x=>(x.age_min??0)<=S.a[1]&&(x.age_max??12)>=S.a[0];
 function filtered(){
   const q=norm(S.q.trim());
   if(S.fav){const f=DATA.filter(x=>FAV.includes(x.id));f.forEach(x=>x._m=mins(x));return f.sort((a,b)=>a._m-b._m)}
+  if(S.type==="perso"&&!q){const p=DATA.filter(x=>PIDS.has(x.id));p.forEach(x=>x._m=mins(x));return p.sort((a,b)=>a._m-b._m)}
   if(S.type==="week"&&!q){const w=DATA.filter(x=>isEv(x)&&evLive(x)&&evWk(x));w.forEach(x=>x._m=mins(x));
     return w.filter(x=>x.wk||x._m<=70).filter(ageOk).sort((a,b)=>(b.tip?1:0)-(a.tip?1:0)||(b.wk?1:0)-(a.wk?1:0)||a._m-b._m)}
   let arr=DATA.filter(x=>!isEv(x)||evLive(x));
@@ -460,7 +466,7 @@ function card(x,pop){
   const v=!!VIS[x.id], f=FAV.includes(x.id), src=x.photo&&(PH[x.photo]||(/^https?:/.test(x.photo)?x.photo:(window.__noPhotos?null:x.photo)));
   const ill=`${svgIll(x)||`${scatter(x)}<i class="lv ty-${x.type}"><em>${emo(x)}</em>${FX[x.type]||""}</i>`}`;
   const trip=`🚗 ${fmt(x._m)}${x._k!=null?` · ${x._k<5?"< 5":x._k} km`:""}`;
-  const kick=`<div class="kick">${isNew(x)?`<span class="nw">🆕 ${t("isNew")}</span>`:""}<span>${TEMO[x.type]||""} ${tname}</span><span>· ${t("age")(x.age_min??0,x.age_max??12)}</span>${x.indoor?`<span>· ☔ ${t("in")}</span>`:""}</div>`;
+  const kick=`<div class="kick">${PIDS.has(x.id)?`<span class="pk">🏠</span>`:""}${isNew(x)?`<span class="nw">🆕 ${t("isNew")}</span>`:""}<span>${TEMO[x.type]||""} ${tname}</span><span>· ${t("age")(x.age_min??0,x.age_max??12)}</span>${x.indoor?`<span>· ☔ ${t("in")}</span>`:""}</div>`;
   const photo=`<div class="ph">${src?`<img src="${src}" alt="${nm(x)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false;this.parentNode.querySelector('.cr')?.remove()"><div class="ill" hidden>${ill}</div>`:`<div class="ill">${ill}</div>`}
     ${x.hot&&!isEv(x)?`<span class="hb"><span class="flame">🔥</span> ${t("trend")}</span>`:""}${isEv(x)?`<span class="hb">${x.tip?"⭐ Top · ":"📅 "}${fdate(x)}</span>`:""}
     <span class="tb">${trip}</span>${x.credit?`<a class="cr" href="${x.credit_url||"#"}" target="_blank" rel="noopener">📷 ${x.credit}</a>`:""}
@@ -594,12 +600,12 @@ function render(){
   document.getElementById("oriName").textContent=oriLabel(ori());
   document.querySelectorAll("[data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===S.lang));
   document.getElementById("vList").setAttribute("aria-pressed",S.view==="list");document.getElementById("vRad").setAttribute("aria-pressed",S.view==="radar");
-  document.getElementById("types").innerHTML=(wkOn()?[WKT,...TYPES]:TYPES).map(([k,e,fr,de,c])=>`<button class="pill" data-t="${k}" aria-pressed="${S.type===k}" style="${S.type===k?"":`background:${c}`}">${k==="hot"?`<span class="flame">${e}</span>`:e} ${typeName(k)}</button>`).join("");
+  document.getElementById("types").innerHTML=[...(wkOn()?[WKT]:[]),...(PIDS.size?[PKT]:[]),...TYPES].map(([k,e,fr,de,c])=>`<button class="pill" data-t="${k}" aria-pressed="${S.type===k}" style="${S.type===k?"":`background:${c}`}">${k==="hot"?`<span class="flame">${e}</span>`:e} ${typeName(k)}</button>`).join("");
   {const ks=kidsFor(S.a);document.getElementById("ageTxt").textContent=ks?ks:`${S.a[0]}–${S.a[1]}`;document.querySelector('#ageBtn [data-i="yrs"]').hidden=!!ks}
   document.getElementById("seaBtn").setAttribute("aria-pressed",S.sea);document.getElementById("seaTxt").textContent=t("sea")[SEAS];
   document.getElementById("nearBtn").setAttribute("aria-pressed",S.near);document.getElementById("inBtn").setAttribute("aria-pressed",S.indoor);
   drawFav();
-  if(S.type==="week"&&!wkOn())S.type="hot";
+  if(S.type==="week"&&!wkOn()||S.type==="perso"&&!PIDS.size)S.type="hot";
   const arr=filtered();
   rollCount(arr.length);
   drawTitle();

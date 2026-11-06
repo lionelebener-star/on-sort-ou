@@ -27,6 +27,8 @@ Lis d'abord `src/README.md` (structure, build, schéma de `data.json`).
 - Coordonnées (`lat`, `lon`) : celles du lieu réel (4 décimales).
 - `site` : URL **https** officielle de l'événement ou du lieu.
 
+- Ne **jamais** modifier `src/perso.json` (liste perso de Lionel, gérée à la main).
+
 ## Partie A — « Ce week-end » (perso de Lionel) → `src/weekend.json`
 
 Pour le **samedi et le dimanche qui suivent**, au départ de **Rüti bei Büren (BE)**, **≤ ~60 min en voiture**, **enfants de 3 à 7 ans**.
